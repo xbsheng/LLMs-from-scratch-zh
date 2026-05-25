@@ -85,8 +85,13 @@ jobs:
           cat translate_log.txt
 
           # Count how many cells were actually translated
-          TRANSLATED=$(grep -c "🔄" translate_log.txt 2>/dev/null || echo "0")
-          REUSED=$(grep -c "♻️" translate_log.txt 2>/dev/null || echo "0")
+          # NOTE: use `|| true` not `|| echo "0"` — grep -c already prints "0" to stdout
+          # when no matches, and `|| echo` would append a second bare "0" line to GITHUB_OUTPUT
+          # which causes "Invalid format '0'" error.
+          TRANSLATED=$(grep -c "🔄" translate_log.txt 2>/dev/null || true)
+          TRANSLATED=${TRANSLATED:-0}
+          REUSED=$(grep -c "♻️" translate_log.txt 2>/dev/null || true)
+          REUSED=${REUSED:-0}
           echo "translated=$TRANSLATED" >> "$GITHUB_OUTPUT"
           echo "reused=$REUSED" >> "$GITHUB_OUTPUT"
 
